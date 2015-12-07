@@ -8,6 +8,7 @@ pyparsing
 pip install pyparsing)
 
 Запуск скрипта имеет тот же что запуск btrfs-debug-tree
+
 python btrfs_graph.py "ключ" "устройстово"
 Пример python btrfs_graph.py -d /dev/sdb1
 
