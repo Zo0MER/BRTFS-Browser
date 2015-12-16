@@ -110,6 +110,23 @@ def parseDevExtentChunk(data):
 	res = parse_module.parseString(data)
 	return res
 
+#prealloc data disk byte 572784640 nr 134217728
+#prealloc data offset 0 nr 134217728
+def parseExtentDataDisk(data):
+	item = Suppress('prealloc data disk')
+	byte = Suppress('byte') + Word(nums)('byte')
+	nr = Suppress('nr') + Word(nums)('nr')
+	parse_module = item + byte + nr
+	res = parse_module.parseString(data)
+	return res
+def parseExtentDataOffset(data):
+	item = Suppress('prealloc data offset')
+	offset = Suppress('offset') + Word(nums)('offset')
+	nr = Suppress('nr') + Word(nums)('nr')
+	parse_module = item + offset + nr
+	res = parse_module.parseString(data)
+	return res
+
 #chunk length 8388608 owner 2 type 1 num_stripes 1
 #stripe 0 devid 1 offset 12582912
 def parseChunkItem(data):
@@ -150,8 +167,12 @@ case = {
 }
 
 leaf = ''
-items = ""
+node = ""
 k = 0
+file_item = ""
+
+items = []
+inode = []
 
 dot = Digraph(engine='neato', graph_attr={'rankdir': 'LR'}, node_attr = {'fontsize': '8'})
 
@@ -163,36 +184,60 @@ for index, line in enumerate(lines):
 		continue 
 
 	firstword = line.split(' ')[0] 
-	if firstword == 'leaf':
-		if leaf != '':
-			dot.node('node' + str(k) , items, shape = 'record')
-		leaf = func(line)
-		items = "leaf " + leaf['leaf'] + ' ' + leaf['owner']
-		k += 1
+	#if firstword == 'leaf':
+		#if leaf != '':
+		#leaf = func(line)
+		#items = "leaf " + leaf['leaf'] + ' ' + leaf['owner']
 	if firstword == 'item':
-		items += " | "
+		#items += " | "
 		item = func(line)
-		items += item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
-		if item['type'] == 'DEV_EXTENT':
+		#if item['type'] == 'DEV_EXTENT':
+		#	devext_line = lines[index + 1].strip()
+		#	chunk_line = lines[index + 2].strip()
+		#	parseDevExtent(devext_line)
+		#	parseDevExtentChunk(chunk_line)
+		#if item['type'] == 'CHUNK_ITEM':
+		#	chunk_line = lines[index + 1].strip()
+		#	chunkitem = parseChunkItem(chunk_line)
+		#	stripes = []
+		#	for strip_index in xrange(int(chunkitem.num_stripes)):
+		#		strip_line = lines[index + strip_index + 2].strip()
+		#		stripes.append(parseChunkItemStripe(strip_line))
+		#	item['stripes'] = stripes
+		#if item['type'] == 'DEV_ITEM':
+		#	item_line = lines[index + 1].strip()
+		#	parseDevItem(item_line)
+		if item['type'] == 'EXTENT_DATA':
+			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
 			devext_line = lines[index + 1].strip()
 			chunk_line = lines[index + 2].strip()
-			parseDevExtent(devext_line)
-			parseDevExtentChunk(chunk_line)
-		if item['type'] == 'CHUNK_ITEM':
-			chunk_line = lines[index + 1].strip()
-			chunkitem = parseChunkItem(chunk_line)
-			stripes = []
-			for strip_index in xrange(int(chunkitem.num_stripes)):
-				strip_line = lines[index + strip_index + 2].strip()
-				stripes.append(parseChunkItemStripe(strip_line))
-			item['stripes'] = stripes
-		if item['type'] == 'DEV_ITEM':
-			item_line = lines[index + 1].strip()
-			parseDevItem(item_line)
-	if firstword == 'node':
-		items += " | "
-		item = func(line)
-		items += item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
+			node += '\n' + devext_line + '\n' + chunk_line
+		#	extentDataDisk = parseExtentDataDisk(devext_line)
+		#	extentDataOffset = parseExtentDataOffset(chunk_line)
+			dot.node('node' + str(k) , node, shape = 'record')
+			k += 1
+			dot.edge(file_item, 'node' + str(k), constraint='false')
+
+		if item['type'] == 'INODE_ITEM':
+			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
+			inode_item = lines[index + 1].strip()
+			node += '\n' + inode_item
+			file_item = 'node' + str(k)
+			dot.node('node' + str(k) , node, shape = 'record')
+			k += 1
+			
+		if item['type'] == 'INODE_REF':
+			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
+			inode_ref = lines[index + 1].strip()
+			node += '\n' + inode_ref
+			dot.node('node' + str(k) , node, shape = 'record')
+			k += 1
+			dot.edge(file_item, 'node' + str(k), constraint='false')
+
+	#if firstword == 'node':
+	#	items += " | "
+	#	item = func(line)
+	#	items += item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
 
 dot.view()
-dot.edge('B:f0', 'L', constraint='false')
+#dot.edge('B:f0', 'L', constraint='false')
