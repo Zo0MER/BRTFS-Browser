@@ -1,12 +1,5 @@
 # BRTFS-Browser
 
-Зависимости:
-python3
-graphviz
-pyparsing
-(pip install graphviz
-pip install pyparsing)
-
 Текущая команда: 
 - Алексеевич Андрей 
 - Кувшинов Игорь
