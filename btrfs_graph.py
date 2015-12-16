@@ -207,6 +207,28 @@ for index, line in enumerate(lines):
 		#if item['type'] == 'DEV_ITEM':
 		#	item_line = lines[index + 1].strip()
 		#	parseDevItem(item_line)
+		
+
+		if item['type'] == 'INODE_ITEM':
+			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
+			inode_item = lines[index + 1].strip()
+			node += '\n' + inode_item
+			file_item = 'node' + str(k)
+			if len(inode) != 0:
+				items.append(inode)
+				inode = []
+			else:
+				inode.append(node)
+
+		if item['type'] == 'INODE_REF':
+			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
+			inode_ref = lines[index + 1].strip()
+			node += '\n' + inode_ref
+			if len(inode) == 0 :
+				inode = []
+			else:
+				inode.append(node)
+
 		if item['type'] == 'EXTENT_DATA':
 			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
 			devext_line = lines[index + 1].strip()
@@ -214,30 +236,14 @@ for index, line in enumerate(lines):
 			node += '\n' + devext_line + '\n' + chunk_line
 		#	extentDataDisk = parseExtentDataDisk(devext_line)
 		#	extentDataOffset = parseExtentDataOffset(chunk_line)
-			dot.node('node' + str(k) , node, shape = 'record')
-			k += 1
-			dot.edge(file_item, 'node' + str(k), constraint='false')
-
-		if item['type'] == 'INODE_ITEM':
-			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
-			inode_item = lines[index + 1].strip()
-			node += '\n' + inode_item
-			file_item = 'node' + str(k)
-			dot.node('node' + str(k) , node, shape = 'record')
-			k += 1
-			
-		if item['type'] == 'INODE_REF':
-			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
-			inode_ref = lines[index + 1].strip()
-			node += '\n' + inode_ref
-			dot.node('node' + str(k) , node, shape = 'record')
-			k += 1
-			dot.edge(file_item, 'node' + str(k), constraint='false')
+			if len(inode) == 0 :
+				inode = []
+			else:
+				inode.append(node)
 
 	#if firstword == 'node':
 	#	items += " | "
 	#	item = func(line)
 	#	items += item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
-
-dot.view()
+print items
 #dot.edge('B:f0', 'L', constraint='false')
