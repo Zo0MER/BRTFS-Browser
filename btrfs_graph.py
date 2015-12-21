@@ -1,9 +1,11 @@
-from graphviz import Digraph
+from graphviz import Graph
 from pyparsing import *
 import sys
 import os
 import subprocess
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 lines = ""
 if len(sys.argv) > 1:
@@ -174,7 +176,7 @@ file_item = ""
 items = []
 inode = []
 
-dot = Digraph(engine='neato', graph_attr={'rankdir': 'LR'}, node_attr = {'fontsize': '8'})
+#dot = Digraph(engine='neato', graph_attr={'rankdir': 'LR'}, node_attr = {'fontsize': '8'})
 
 for index, line in enumerate(lines):
 	line = line.strip()
@@ -213,6 +215,10 @@ for index, line in enumerate(lines):
 			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
 			inode_item = lines[index + 1].strip()
 			node += '\n' + inode_item
+
+#graphviz associate ':' with ports and can't make graph
+			node = node.replace(":", " - ")
+
 			file_item = 'node' + str(k)
 			if len(inode) != 0:
 				items.append(inode)
@@ -224,6 +230,9 @@ for index, line in enumerate(lines):
 			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
 			inode_ref = lines[index + 1].strip()
 			node += '\n' + inode_ref
+
+			node = node.replace(":", " - ")
+
 			if len(inode) == 0 :
 				inode = []
 			else:
@@ -236,6 +245,9 @@ for index, line in enumerate(lines):
 			node += '\n' + devext_line + '\n' + chunk_line
 		#	extentDataDisk = parseExtentDataDisk(devext_line)
 		#	extentDataOffset = parseExtentDataOffset(chunk_line)
+
+			node = node.replace(":", " - ")
+
 			if len(inode) == 0 :
 				inode = []
 			else:
@@ -245,5 +257,49 @@ for index, line in enumerate(lines):
 	#	items += " | "
 	#	item = func(line)
 	#	items += item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
-print items
+#print items
 #dot.edge('B:f0', 'L', constraint='false')
+
+
+#main graph for display tree
+G = Graph(
+	engine = 'dot',
+	format = 'svg',
+	filename = 'Btrfs-Graph.dot',
+	name = 'BRTFS-Browser',
+	comment = 'https://github.com/Zo0MER/BRTFS-Browser.git',
+	graph_attr = {'rankdir': 'RL',
+					'charset':'utf-8',
+					'bgcolor':'#eeeeee',
+					'labelloc':'t', 
+					'splines':'compound',
+					'nodesep':'0.7',
+					'ranksep':'5'
+				},
+	node_attr = {'fontsize': '18.0',
+				'shape':'box'
+	}
+)
+
+#node with title and hyperlink on github
+G.node('meta', 
+	label = 'Btrfs-debug-tree \nhttps://github.com/Zo0MER/BRTFS-Browser.git', 
+	href = 'https://github.com/Zo0MER/BRTFS-Browser.git',
+	fontcolor = '#4d2600',
+	fontsize = '30.0'
+	)
+
+first = items[0]
+items.remove(items[0])
+
+#link first item ROOT_TREE_DIR INODE_ITEM, INODE_REF with all INODE_ITEM EXTEND_DATA
+for pair in items:
+	G.edge(''.join([str(x) for x in first]), ''.join([str(x) for x in pair]))
+
+#save *.dot and *.svg
+G.save()
+G.render()
+
+#save *.png
+G.format = 'png'
+G.render()
