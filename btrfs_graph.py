@@ -41,7 +41,7 @@ if len(sys.argv) > 2:
 else:
 	sys.exit()
 
-lines = open("BTRFS_1", "r").readlines()
+#lines = open("BTRFS_1", "r").readlines()
 
 key = Suppress('key (') +  Word(alphanums + '_' + '-')('id') + Word(alphanums + '_' + '-')('type') + \
 	Word(alphanums + '_' + '-')('offset') + Suppress(')')
@@ -263,6 +263,8 @@ for index, line in enumerate(lines):
 	#	items += item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
 #print items
 #dot.edge('B:f0', 'L', constraint='false')
+
+print inode
 
 #main graph for display tree
 G = Graph(
