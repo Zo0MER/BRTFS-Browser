@@ -175,6 +175,10 @@ k = 0
 file_item = ""
 
 file_index = findFile(path, lines)
+if file_index < 0:
+	print "File not found"
+	sys.exit()
+
 lines = lines[file_index:]
 
 items = []
