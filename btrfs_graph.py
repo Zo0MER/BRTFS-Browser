@@ -41,6 +41,8 @@ if len(sys.argv) > 2:
 else:
 	sys.exit()
 
+lines = open("BTRFS_1", "r").readlines()
+
 key = Suppress('key (') +  Word(alphanums + '_' + '-')('id') + Word(alphanums + '_' + '-')('type') + \
 	Word(alphanums + '_' + '-')('offset') + Suppress(')')
 name = Suppress('name:') + Word(alphanums  + '_' + '.'  + '{' + '}' + '-')('name')
@@ -202,13 +204,11 @@ if file_index < 0:
 
 lines = lines[file_index:]
 
-items = []
 inode = []
 
 #dot = Digraph(engine='neato', graph_attr={'rankdir': 'LR'}, node_attr = {'fontsize': '8'})
 for index, line in enumerate(lines):
 	line = line.strip()
-
 	firstword = line.split(' ')[0] 
 	parser = case.get(firstword)
 
@@ -218,22 +218,22 @@ for index, line in enumerate(lines):
 	if firstword == 'item':
 		item = parser.parseString(line)
 
-		if item['type'] == 'INODE_ITEM':
-			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
-			inode_item = lines[index + 1].strip()
-			node += '\n' + inode_item
+		#if item['type'] == 'INODE_ITEM':
+		#	node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
+		#	inode_item = lines[index + 1].strip()
+		#	node += '\n' + inode_item
 
 			#graphviz associate ':' with ports and can't make graph
-			node = node.replace(":", " - ")
+		#	node = node.replace(":", " - ")
 
-			file_item = 'node' + str(k)
-			if len(inode) != 0:
-				items.append(inode)
-				inode = []
-			else:
-				inode.append(node)
+		#	file_item = 'node' + str(k)
+		#	if len(inode) != 0:
+		#		items.append(inode)
+		#		inode = []
+		#	else:
+		#		inode.append(node)
 
-		elif item['type'] == 'INODE_REF':
+		if item['type'] == 'INODE_REF':
 			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
 			inode_ref = lines[index + 1].strip()
 			parseRes = parseInodeRef.parseString(inode_ref)
@@ -241,10 +241,9 @@ for index, line in enumerate(lines):
 
 			node = node.replace(":", " - ")
 
-			if len(inode) == 0 :
-				inode = []
-			else:
-				inode.append(node)
+			inode.append(node)
+
+			print node
 
 		elif item['type'] == 'EXTENT_DATA':
 			node = item['item'] + ' ' + item['id'] + ' ' + item['type']  + ' ' + item['itemoff']
@@ -254,10 +253,7 @@ for index, line in enumerate(lines):
 
 			node = node.replace(":", " - ")
 
-			if len(inode) == 0 :
-				inode = []
-			else:
-				inode.append(node)
+			inode.append(node)
 		else:
 			break
 
@@ -296,8 +292,8 @@ G.node('meta',
 	fontsize = '30.0'
 	)
 
-first = items[0]
-items.remove(items[0])
+first = inode[0]
+inode.remove(inode[0])
 
 #link first item ROOT_TREE_DIR INODE_ITEM, INODE_REF with all INODE_ITEM EXTEND_DATA
 for pair in items:
