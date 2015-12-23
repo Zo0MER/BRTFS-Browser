@@ -4,6 +4,27 @@ import sys
 import os
 import subprocess
 
+def getDisks():
+	res = []
+	args = ["sudo", "lsblk", "-io", "KNAME,FSTYPE,LABEL,MOUNTPOINT"]
+	p = subprocess.Popen(args, stdout=subprocess.PIPE)
+	lines, error = p.communicate()
+	lines = lines.split('\n')
+
+	kname = Word(alphanums)('kname')
+	fstype = Word(alphanums)('fstype')
+	label = Word(alphanums)('label')
+	mountpoint = Word(alphanums)('mountpoint')
+	parser = kname + fstype + Optional(label) + Optional(mountpoint)
+
+	res = []
+	for line in lines:
+		parsRes = parser.scanString(line)
+		for parse in parsRes:
+			res.append(parse[0])
+	res.remove(res[0])
+	return res
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -22,6 +43,8 @@ else:
 
 key = Suppress('key (') +  Word(alphanums + '_' + '-')('id') + Word(alphanums + '_' + '-')('type') + \
 	Word(alphanums + '_' + '-')('offset') + Suppress(')')
+name = Suppress('name:') + Word(alphanums  + '_' + '.'  + '{' + '}' + '-')('name')
+
 
 leaf = Suppress('leaf') + Word(nums)('leaf')
 num_items = Suppress('items') + Word(nums)('items')
@@ -56,7 +79,6 @@ parseNodeKey = item + key + block + subblock + generation
 item = Suppress('inode ref')
 index = Suppress('index') + Word(nums)('index')
 namelen = Suppress('namelen') + Word(nums)('namelen')
-name = Suppress('name:') + Word(alphanums + '.' + '_')('name')
 parseInodeRef = item + index + namelen + name
 
 
@@ -75,7 +97,6 @@ location = Suppress('location')
 typeItem = Suppress('type') + Word(alphas + '_' + '.' + nums)('type')
 namelen = Suppress('namelen') + Word(nums)('namelen')
 datalen = Suppress('datalen') + Word(nums)('datalen')
-name = Suppress('name:') + Word(alphanums  + '_' + '.'  + '{' + '}')('name')
 parseDirItem = location + key + typeItem + namelen + datalen + name
 
 #dev extent chunk_tree 3
