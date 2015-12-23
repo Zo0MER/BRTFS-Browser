@@ -298,7 +298,7 @@ first = inode[0]
 inode.remove(inode[0])
 
 #link first item ROOT_TREE_DIR INODE_ITEM, INODE_REF with all INODE_ITEM EXTEND_DATA
-for pair in items:
+for pair in inode:
 	G.edge(''.join([str(x) for x in first]), ''.join([str(x) for x in pair]))
 
 #save *.dot and *.svg
