@@ -1,7 +1,0 @@
-// https://github.com/Zo0MER/BRTFS-Browser.git
-graph "BRTFS-Browser" {
-	graph [bgcolor="#eeeeee" charset="utf-8" labelloc=t nodesep=0.7 rankdir=RL ranksep=5 splines=compound]
-	node [fontsize=18.0 shape=box]
-		meta [label="Btrfs-debug-tree 
-https://github.com/Zo0MER/BRTFS-Browser.git" fontcolor="#4d2600" fontsize=30.0 href="https://github.com/Zo0MER/BRTFS-Browser.git"]
-}
