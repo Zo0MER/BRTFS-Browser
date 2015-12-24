@@ -145,12 +145,8 @@ def mainParsing():
 	file_item = ""
 
 	parfile = enterFile.get()
-	path = []
+	path = parfile.split('/')
 	path.insert(0,"..")
-	path.insert(1,parfile)
-	
-	 
-
 
 	fs_tree = False
 	file_index = -1
